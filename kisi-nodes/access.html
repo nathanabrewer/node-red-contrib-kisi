@@ -1,0 +1,152 @@
+
+<script type="text/x-red" data-template-name="kisi-unlock">
+
+
+
+
+    <img src="icons/kisi.jpg" style="float: left; max-width:35%;">
+    <div style="width:65%; float:left;">
+        <div class="form-row">
+            <input type="text" id="node-input-account">
+        </div>
+        <div class="form-row kisi-loading" style='display:none; text-align:center;'>
+          <p>
+          Loading KISI account data...
+          </p>
+        </div>
+
+        <div class="kisi-account">
+          <div class="form-row">
+              <input type="text" id="node-input-name" placeholder="name">
+          </div>
+          <div class="form-row">
+              <select id="node-input-lockid" >
+              <option>loading...</option>
+              </select>
+          </div>
+        </div>
+
+    </div>
+
+
+  <div class="form-row">
+      <div style="text-align:right;">
+        <img src="icons/proximity-space.svg" style="width:100px;"/><br/>
+        <small>
+          Inspired at proximity space<br/>
+          <i>T3CH-DFTZ</i>
+        </small>
+      </div>
+  </div>
+</script>
+<script type="text/x-red" data-help-name="kisi-unlock">
+    <h2>KISI unlock</h2>
+    <p>Input expects topic to be unlock</p>
+    <p>be sure to put exact door/lock id in on this node</p>
+    <br/>
+</script>
+
+<script type="text/javascript">
+
+    var currentNode;
+    var selectedAccount;
+
+    var loadAccount = function(accountId){
+      if(selectedAccount == accountId) return;
+      selectedAccount = accountId;
+
+      if(selectedAccount != '_ADD_'){
+
+          console.log(selectedAccount);
+          $('.kisi-loading').fadeIn(400);
+          $.ajax({
+              url: "kisi-account/"+accountId,
+              type:"POST",
+              data: {
+                'fetch': 'keys'
+              },
+              success: function(resp) {
+                console.log(resp);
+
+                if(resp.length < 1){
+                  $('.kisi-account').hide();
+                  return;
+                }
+                $('.kisi-loading').fadeOut(400);
+                $('.kisi-account').show();
+                var lockIdSelectList = $('#node-input-lockid');
+                lockIdSelectList.empty().append('<option value="">---select a door/lock---</option>');
+                resp.forEach(function(op){
+                  lockIdSelectList.append('<option value="'+op.id+'">'+op.name+'</option>');
+                });
+
+                  //RED.notify("OK...got something");
+
+              },
+              error: function(jqXHR,textStatus,errorThrown) {
+                $('.kisi-loading').fadeOut(400);
+                  RED.notify("<strong>Error</strong>: unexpected error when populating account data: ("+jqXHR.status+") "+textStatus,"error");
+              }
+          });
+
+
+      }else{
+        $('.kisi-account').hide();
+
+      }
+    };
+
+    RED.nodes.registerType('kisi-unlock',{
+        category: 'kisi',      // the palette category
+        color:"#FFFFFF",
+        defaults: {
+            name: {value:""},
+            lockid: {value:""},
+            account: {value:"", type:"kisi-account"},
+        },
+        inputs:1,               // set the number of inputs - only 0 or 1
+        outputs:1,              // set the number of outputs - 0 to n
+        icon: "kisi.jpg",     // saved in  icons/myicon.png
+        label: function() {
+                return "Unlock Door";
+        },
+        labelStyle: function() { // sets the class to apply to the label
+            return this.name ? "node_label_italic" : "";
+        },
+        oneditprepare: function(){
+
+          $('.kisi-account').hide();
+          currentNode = this;
+          loadAccount(currentNode.account);
+
+          //do i need to destroy this event onclose?
+          $('#node-input-account').on('change', function(d){
+            loadAccount(d.target.value);
+          });
+        },
+        button: {
+            onclick: function() {
+                $.ajax({
+                    url: "kisi-unlock/"+this.id,
+                    type:"POST",
+                    data: {
+                    },
+                    success: function(resp) {
+                        RED.notify("OK");
+                    },
+                    error: function(jqXHR,textStatus,errorThrown) {
+                        if (jqXHR.status == 404) {
+                            RED.notify("<strong>Error</strong>: not deployed","error");
+                        } else if (jqXHR.status == 500) {
+                            RED.notify("<strong>Error</strong>: failed, see log for details.","error");
+                        } else if (jqXHR.status == 0) {
+                            RED.notify("<strong>Error</strong>: no response from server","error");
+                        } else {
+                            RED.notify("<strong>Error</strong>: unexpected error: ("+jqXHR.status+") "+textStatus,"error");
+                        }
+                    }
+                });
+            }
+        }
+    });
+</script>

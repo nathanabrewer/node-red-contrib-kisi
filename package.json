@@ -1,0 +1,29 @@
+{
+  "name": "node-red-contrib-kisi",
+  "version": "0.0.4",
+  "description": "nodejs node for kisi",
+  "dependencies": {
+    "when": "latest",
+    "kisi-client":"latest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nathanabrewer/node-red-contrib-kisi"
+  },
+  "license": "Apache",
+  "keywords": [
+    "kisi"
+  ],
+  "node-red": {
+    "nodes": {
+      "kisiAccount": "kisi-nodes/account.js",
+      "kisiAccess": "kisi-nodes/access.js"
+
+    }
+  },
+  "author": {
+    "name": "Nathan Brewer",
+    "email": "nathan.a.brewer@dftz.org",
+    "url": "http://dftz.org"
+  }
+}

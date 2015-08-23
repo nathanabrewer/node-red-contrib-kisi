@@ -1,0 +1,32 @@
+<script type="text/x-red" data-template-name="kisi-account">
+    <div class="form-row">
+        <label for="node-config-input-name"><i class="fa fa-tag"></i> Name</label>
+        <input type="text" id="node-config-input-name" placeholder="Name">
+    </div>
+    <div class="form-row">
+        <label for="node-config-input-username"><i class="fa fa-tag"></i> Username</label>
+        <input type="text" id="node-config-input-username" placeholder="Username">
+    </div>
+    <div class="form-row">
+        <label for="node-config-input-password"><i class="fa fa-tasks"></i> Password</label>
+        <input type="text" id="node-config-input-password" placeholder="Password">
+    </div>
+</script>
+
+<script type="text/javascript">
+    RED.nodes.registerType('kisi-account',{
+        category: 'config',
+        defaults: {
+            name: {value:""},
+            password:{value:""},
+            username:{value:""}
+        },
+        label: function() {
+            if (this.name) {
+                return this.name;
+            } else {
+                return "KISI ACCOUNT";
+            }
+        }
+    });
+</script>
